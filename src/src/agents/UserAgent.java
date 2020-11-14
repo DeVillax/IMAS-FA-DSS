@@ -1,4 +1,4 @@
-// All agents extend from the Agent class
+// Jade Imports
 import jade.core.Agent;
 import jade.util.Logger;
 import jade.core.behaviours.*;
@@ -12,10 +12,15 @@ import jade.wrapper.StaleProxyException;
 import jade.core.AID;
 import jade.lang.acl.ACLMessage;
 
+
+// Java imports
 import java.util.Scanner;
 
-// java -cp lib\jade.jar;src\test jade.Boot -agents user:UserAgent -gui
+// Compile: javac -cp lib\jade.jar -d src\test\ src\src\agents\*.java
+// Execute: java -cp lib\jade.jar;src\test jade.Boot -agents user:UserAgent -gui
 
+
+// All agents extend from the Agent class
 public class UserAgent extends Agent {
     private Logger myLogger = Logger.getMyLogger(getClass().getName());
 
@@ -28,7 +33,6 @@ public class UserAgent extends Agent {
 
 		*/
 		private UserAgent myAgent;
-		//private boolean complete = false;
 
 		public ReadUserInputBehaviour(UserAgent a) {
 			super(a);
@@ -40,33 +44,15 @@ public class UserAgent extends Agent {
 			Scanner scanner = new Scanner(System.in);
 			System.out.println("Please enter your action:");
 			String input = scanner.nextLine();
-			/*
-			String action = input.split("_")[0];
-			String file = input.split("_")[1];
-			myAgent.setAction(action);
-			myAgent.setFile(file);
-			*/
+			
 			// Now this info needs to be passed to the ManagerAgent
 			ACLMessage message = new ACLMessage(ACLMessage.INFORM);
      		message.addReceiver(new AID("manager", AID.ISLOCALNAME));
       		message.setContent(input);
       		myAgent.send(message);
-			//this.complete = true; 
-			// Validation
-			//System.out.println("Action is " + action);
-			//System.out.println("File is " + file);
+			
 		}
 
-		// The below is only necessary if SimpleBehaviour is used
-		/*
-		public boolean done(){
-			if (complete){
-				return true;
-			} else{
-				return false;
-			}
-		}
-		*/
 	}
 
 	private class ReceiveMessageBehaviour extends CyclicBehaviour{
@@ -111,16 +97,6 @@ public class UserAgent extends Agent {
 			doDelete();
 		}
     }
-
-	/* No need for now
-	public void setAction(String act){
-		this.action = act;
-	} 
-
-	public void setFile(String f){
-		this.file = f;
-	} 
-	*/
 	
 	private void createManagerAgent(){
 		// Dynamically creates the Manager Agent

@@ -51,7 +51,7 @@ public class ManagerAgent extends Agent {
             msg = myAgent.blockingReceive();
 
 			// Print message to check it was received
-            System.out.println(msg.getContent());
+            // System.out.println(msg.getContent());
 
 			if (msg.getContent().contains("_")){
 				String action = msg.getContent().split("_")[0];
@@ -85,6 +85,10 @@ public class ManagerAgent extends Agent {
 					message.addReceiver(new AID("user", AID.ISLOCALNAME));
 					message.setContent("System ready...");
 					myAgent.send(message);
+				} else{
+					// Evaluation
+					// To do in the next deliverable
+					
 				}
 			} else{
 				ACLMessage message = new ACLMessage(ACLMessage.INFORM);
@@ -156,7 +160,7 @@ public class ManagerAgent extends Agent {
 	private void createFuzzyAgent(){
 		// Dynamically creates the Fuzzy Agent
 		ContainerController cc = getContainerController();
-		System.out.println("Creating fuzzy agents...");
+		//System.out.println("Creating fuzzy agents...");
 		for (int i = 0; i < fuzzy; i++){
 			try{
 				AgentController ac = cc.createNewAgent("fuzzy" + Integer.toString(i+1), "FuzzyAgent", null);
