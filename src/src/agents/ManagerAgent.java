@@ -76,11 +76,9 @@ public class ManagerAgent extends Agent {
 					readFile(file);
 
 					// Based on the config file, we have to create the agents 
-					//System.out.println(myAgent.getFuzzy());
 					myAgent.createFuzzyAgent();
 					
 					// Now we need to notify the UserAgent that the Fuzzy Agents are ready.
-					//System.out.println("Sending message...");
 					ACLMessage message = new ACLMessage(ACLMessage.INFORM);
 					message.addReceiver(new AID("user", AID.ISLOCALNAME));
 					message.setContent("System ready...");
@@ -88,7 +86,7 @@ public class ManagerAgent extends Agent {
 				} else{
 					// Evaluation
 					// To do in the next deliverable
-					
+
 				}
 			} else{
 				ACLMessage message = new ACLMessage(ACLMessage.INFORM);
@@ -160,7 +158,6 @@ public class ManagerAgent extends Agent {
 	private void createFuzzyAgent(){
 		// Dynamically creates the Fuzzy Agent
 		ContainerController cc = getContainerController();
-		//System.out.println("Creating fuzzy agents...");
 		for (int i = 0; i < fuzzy; i++){
 			try{
 				AgentController ac = cc.createNewAgent("fuzzy" + Integer.toString(i+1), "FuzzyAgent", null);

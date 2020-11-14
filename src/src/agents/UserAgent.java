@@ -49,13 +49,20 @@ public class UserAgent extends Agent {
 			ACLMessage message = new ACLMessage(ACLMessage.INFORM);
      		message.addReceiver(new AID("manager", AID.ISLOCALNAME));
       		message.setContent(input);
-      		myAgent.send(message);
-			
+      		myAgent.send(message);		
 		}
 
 	}
 
 	private class ReceiveMessageBehaviour extends CyclicBehaviour{
+		/*
+		Behaviour that handles the recival of messages from other agents
+
+		It was assumed that the userAgent only receives messages from the ManagerAgent
+		for notification purposes. As such, it will display the content of these messages
+		to the user.
+
+		*/
 		private UserAgent myAgent;
 		
         public ReceiveMessageBehaviour(UserAgent a) {
@@ -64,13 +71,10 @@ public class UserAgent extends Agent {
 		}
 
 		public void action() {
-			// Action of the ManagerAgent is get the user input and read the file
+			// It gets the message and print its content 
 			ACLMessage msg = null;
             msg = myAgent.blockingReceive();
-
-			// Print message to check it was received
-            System.out.println(msg.getContent());
-            //msg = myAgent.blockingReceive();
+            System.out.println(msg.getContent()); 
 		}
 	}
 	
@@ -85,15 +89,15 @@ public class UserAgent extends Agent {
 		dfd.setName(getAID());
 		dfd.addServices(sd);
 
+		// Creates Manager Agent dynamically
 		createManagerAgent();
 
         try {
 			DFService.register(this, dfd);
-			ReadUserInputBehaviour ReadUserBehaviour = new  ReadUserInputBehaviour(this);
-			addBehaviour(ReadUserBehaviour);
+			addBehaviour(new  ReadUserInputBehaviour(this));
 			addBehaviour(new ReceiveMessageBehaviour(this));
 		} catch (FIPAException e) {
-			myLogger.log(Logger.SEVERE, "Agent " + getLocalName()+ " - Cannot register with DF", e);
+			myLogger.log(Logger.SEVERE, "Agent " + getLocalName()+ " - Cannot be registered with DF", e);
 			doDelete();
 		}
     }
