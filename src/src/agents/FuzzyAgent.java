@@ -32,6 +32,30 @@ public class FuzzyAgent extends Agent {
     private Logger myLogger = Logger.getMyLogger(getClass().getName());
     // TODO in the next deliverable: Add variables
 
+	private class ReceiveMessageBehaviour extends CyclicBehaviour{
+		/*
+		Behaviour that handles the recival of messages from other agents
+
+		It was assumed that the userAgent only receives messages from the ManagerAgent
+		for notification purposes. As such, it will display the content of these messages
+		to the user.
+
+		*/
+		private FuzzyAgent myAgent;
+		
+        public ReceiveMessageBehaviour(FuzzyAgent a) {
+			super(a);
+			myAgent = a;
+		}
+
+		public void action() {
+			// It gets the message and print its content 
+			ACLMessage msg = null;
+            msg = myAgent.blockingReceive();
+            System.out.println(msg.getContent()); 
+		}
+	}
+
     protected void setup(){
         // Method to register with the DF 
         
@@ -45,7 +69,7 @@ public class FuzzyAgent extends Agent {
 
         try {
 			DFService.register(this, dfd);
-			// TODO in the next deliverable: Add behaviours
+			addBehaviour(new ReceiveMessageBehaviour(this));
 
 		} catch (FIPAException e) {
 			myLogger.log(Logger.SEVERE, "Agent " + getLocalName()+ " - Cannot register with DF", e);

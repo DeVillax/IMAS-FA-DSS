@@ -24,8 +24,8 @@ import org.w3c.dom.NodeList;
 import org.w3c.dom.Node;  
 import org.w3c.dom.Element;  
 
-// Compile: javac -cp lib\jade.jar -d src\test\ src\src\agents\*.java
-// Executie: java -cp lib\jade.jar;src\test jade.Boot -agents pa:UserAgent -gui
+// Compile: javac -cp lib\jade.jar -d src\output\ src\src\agents\*.java
+// Executie: java -cp lib\jade.jar;src\output jade.Boot -agents user:UserAgent -gui
 
 // All agents extend from the Agent class
 public class ManagerAgent extends Agent {
@@ -37,10 +37,10 @@ public class ManagerAgent extends Agent {
 	private String aggregation = null;
 
 
-    private class ReadConfigFileBehaviour extends CyclicBehaviour {
+    private class ReceiveMessageBehaviour extends CyclicBehaviour {
 		private ManagerAgent myAgent;
 		
-        public ReadConfigFileBehaviour(ManagerAgent a) {
+        public ReceiveMessageBehaviour(ManagerAgent a) {
 			super(a);
 			myAgent = a;
 		}
@@ -59,10 +59,7 @@ public class ManagerAgent extends Agent {
             	myAgent.setAction(action);
 				myAgent.setFile(file);
 			} else{
-				ACLMessage message = new ACLMessage(ACLMessage.INFORM);
-     			message.addReceiver(new AID("user", AID.ISLOCALNAME));
-      			message.setContent("Wrong input");
-      			myAgent.send(message);
+				myAgent.sendMessage("Wrong input.", "user");
 				return;
 			}
             
@@ -77,22 +74,22 @@ public class ManagerAgent extends Agent {
 
 					// Based on the config file, we have to create the agents 
 					myAgent.createFuzzyAgent();
+
+					// Now we need to pass the fcl files to each Fuzzy Agent
+					String ru[] = myAgent.getFuzzySettings().split(",");
+					for (int i = 1; i <= myAgent.getFuzzy(); i++){
+						myAgent.sendMessage(ru[i-1],"fuzzy"+i);
+					}
 					
 					// Now we need to notify the UserAgent that the Fuzzy Agents are ready.
-					ACLMessage message = new ACLMessage(ACLMessage.INFORM);
-					message.addReceiver(new AID("user", AID.ISLOCALNAME));
-					message.setContent("System ready...");
-					myAgent.send(message);
+					myAgent.sendMessage("System ready...","user");
 				} else{
 					// Evaluation
 					// To do in the next deliverable
 
 				}
 			} else{
-				ACLMessage message = new ACLMessage(ACLMessage.INFORM);
-     			message.addReceiver(new AID("user", AID.ISLOCALNAME));
-      			message.setContent("Action not recognized.");
-      			myAgent.send(message);
+				myAgent.sendMessage("Action not recognized.", "user");
 			}
 		
 		}
@@ -147,8 +144,7 @@ public class ManagerAgent extends Agent {
 
         try {
 			DFService.register(this, dfd);
-			ReadConfigFileBehaviour ReadConfigBehaviour = new ReadConfigFileBehaviour(this);
-			addBehaviour(ReadConfigBehaviour);
+			addBehaviour(new ReceiveMessageBehaviour(this));
 		} catch (FIPAException e) {
 			myLogger.log(Logger.SEVERE, "Agent " + getLocalName()+ " - Cannot register with DF", e);
 			doDelete();
@@ -170,6 +166,14 @@ public class ManagerAgent extends Agent {
 				e.printStackTrace();
 			}
 		}		
+	}
+
+	private void sendMessage(String msg, String agent){
+		// Send messages to Agents
+		ACLMessage message = new ACLMessage(ACLMessage.INFORM);
+     	message.addReceiver(new AID(agent, AID.ISLOCALNAME));
+    	message.setContent(msg);
+      	this.send(message);	
 	}
 
 	public void setAction(String act){
@@ -198,6 +202,10 @@ public class ManagerAgent extends Agent {
 
 	public String getAction(){
 		return this.action;
+	}
+
+	public String getFuzzySettings(){
+		return this.rules;
 	}
 	
     protected void takeDown(){
