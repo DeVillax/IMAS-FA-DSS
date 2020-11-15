@@ -55,10 +55,16 @@ public class ManagerAgent extends Agent {
             // System.out.println(msg.getContent());
 
 			if (msg.getContent().contains("_")){
-				String action = msg.getContent().split("_")[0];
-				String file = msg.getContent().split("_")[1];
-            	myAgent.setAction(action);
-				myAgent.setFile(file);
+				if (msg.getContent().split("_").length == 2){
+					
+					String action = msg.getContent().split("_")[0];
+					String file = msg.getContent().split("_")[1];
+					myAgent.setAction(action);
+					myAgent.setFile(file);
+				} else{
+					myAgent.sendMessage("Wrong input.", "user");
+					return;
+				}
 			} else{
 				myAgent.sendMessage("Wrong input.", "user");
 				return;
@@ -73,6 +79,10 @@ public class ManagerAgent extends Agent {
 					// Read Config file
 					myAgent.readFile(file);
 
+					if (myAgent.getFuzzySettings() == null){
+						return;
+					}
+
 					// Based on the config file, we have to create the agents 
 					myAgent.createFuzzyAgent();
 
@@ -84,6 +94,11 @@ public class ManagerAgent extends Agent {
 					}
 					
 					// Now we need to notify the UserAgent that the Fuzzy Agents are ready.
+					// Ideally, these notifications will first comment from each Fuzzy Agent
+					// and when the Manager Agent receives ok messages from all Fuzzy Agent
+					// it will then notify the UserAgent. For this instance of the work however
+					// we will simply let the Manager Agent send a System ready message
+					
 					myAgent.sendMessage("System ready...","user");
 				} else{
 					// Evaluation
@@ -190,8 +205,9 @@ public class ManagerAgent extends Agent {
 
 			// Checks whether the given file exists
 			if (!f.isFile()){
-				System.out.println("File not found");
-			return;
+				sendMessage("File not found.", "user");
+				//System.out.println("File not found");
+				return;
 			}
 			
 			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();  

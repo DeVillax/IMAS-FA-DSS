@@ -24,8 +24,8 @@ import org.w3c.dom.NodeList;
 import org.w3c.dom.Node;  
 import org.w3c.dom.Element;  
 
-// Compile: javac -cp lib\jade.jar -d src\test\ src\src\agents\*.java
-// Executie: java -cp lib\jade.jar;src\test jade.Boot -agents pa:UserAgent -gui
+// Compile: javac -cp lib\jade.jar -d src\output\ src\src\agents\*.java
+// Executie: java -cp lib\jade.jar;src\output jade.Boot -agents user:UserAgent -gui
 
 // All agents extend from the Agent class
 public class FuzzyAgent extends Agent {
@@ -54,7 +54,7 @@ public class FuzzyAgent extends Agent {
 			// In the next iteration, this will be expanded to set the fcls and start the fuzzy logic
 			ACLMessage msg = null;
             msg = myAgent.blockingReceive();
-            System.out.println(msg.getContent()); 
+            //System.out.println(msg.getContent()); 
 			
 		}
 	}
