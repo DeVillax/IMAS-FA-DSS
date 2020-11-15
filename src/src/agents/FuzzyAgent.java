@@ -50,11 +50,12 @@ public class FuzzyAgent extends Agent {
 
 		public void action() {
 			// It gets the message and print its content 
-			/*
+			// For this deliverable, we are simply checking that the fuzzy agents receive messages from the manager agent
+			// In the next iteration, this will be expanded to set the fcls and start the fuzzy logic
 			ACLMessage msg = null;
             msg = myAgent.blockingReceive();
             System.out.println(msg.getContent()); 
-			*/
+			
 		}
 	}
 

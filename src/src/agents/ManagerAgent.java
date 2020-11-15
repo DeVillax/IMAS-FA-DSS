@@ -71,7 +71,7 @@ public class ManagerAgent extends Agent {
 					// Initialization
 
 					// Read Config file
-					readFile(file);
+					myAgent.readFile(file);
 
 					// Based on the config file, we have to create the agents 
 					myAgent.createFuzzyAgent();
@@ -96,40 +96,6 @@ public class ManagerAgent extends Agent {
 		
 		}
 
-		private void readFile(String file){
-			// Reads the XML file
-			
-			try{
-				File f = new File("src\\config\\" + file);
-
-				// Checks whether the given file exists
-				if (!f.isFile()){
-					System.out.println("File not found");
-				return;
-				}
-				
-				DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();  
-				DocumentBuilder db = dbf.newDocumentBuilder();  
-				Document doc = db.parse(f);  
-				
-				doc.getDocumentElement().normalize();  
-				NodeList nodeList = doc.getElementsByTagName("SimulationSettings");  
-				
-				for (int i = 0; i < nodeList.getLength(); i++){  
-					Node node = nodeList.item(i);  
-					
-					if (node.getNodeType() == Node.ELEMENT_NODE){  
-						Element eElement = (Element) node;  
-
-						myAgent.setFuzzy(Integer.parseInt(eElement.getElementsByTagName("fuzzyagents").item(0).getTextContent()));
-						myAgent.setRules(eElement.getElementsByTagName("fuzzySettings").item(0).getTextContent());
-						myAgent.setAggregation(eElement.getElementsByTagName("aggregation").item(0).getTextContent());
-					}
-				}
-			} catch (Exception e) {  
-				e.printStackTrace();  
-			}  
-		}
 	}
 	
 
@@ -153,35 +119,7 @@ public class ManagerAgent extends Agent {
 		}
     }
 
-	private void createFuzzyAgent(){
-		// Dynamically creates the Fuzzy Agent
-		ContainerController cc = getContainerController();
-		int agentsToCreate = requiredFuzzyAgents - currentFuzzyAgents;
-		int c = currentFuzzyAgents;
-		for (int i = requiredFuzzyAgents; i >c ; i--){
-			try{
-				AgentController ac = cc.createNewAgent("fuzzy" + Integer.toString(i), "FuzzyAgent", null);
-				currentFuzzyAgents = currentFuzzyAgents + 1; 
-				try{
-					ac.start();
-				} catch (StaleProxyException e){
-					e.printStackTrace();
-				}
-			} catch (StaleProxyException e){
-				e.printStackTrace();
-			}
-		}
-		System.out.println(currentFuzzyAgents);		
-	}
-
-	private void sendMessage(String msg, String agent){
-		// Send messages to Agents
-		ACLMessage message = new ACLMessage(ACLMessage.INFORM);
-     	message.addReceiver(new AID(agent, AID.ISLOCALNAME));
-    	message.setContent(msg);
-      	this.send(message);	
-	}
-
+	// -------------------------------------- Setters ------------------------------------------
 	public void setAction(String act){
 		this.action = act;
 	} 
@@ -202,6 +140,7 @@ public class ManagerAgent extends Agent {
 		this.aggregation = ag;
 	}
 
+	// -------------------------------------- Getters ------------------------------------------
 	public int getFuzzy(){
 		return this.requiredFuzzyAgents;
 	}
@@ -214,6 +153,70 @@ public class ManagerAgent extends Agent {
 		return this.rules;
 	}
 	
+	// -------------------------------------- Other Methods ------------------------------------------
+
+	private void createFuzzyAgent(){
+		// Dynamically creates the Fuzzy Agent
+		ContainerController cc = getContainerController();
+		int c = currentFuzzyAgents;
+		for (int i = requiredFuzzyAgents; i > c ; i--){
+			try{
+				AgentController ac = cc.createNewAgent("fuzzy" + Integer.toString(i), "FuzzyAgent", null);
+				currentFuzzyAgents = currentFuzzyAgents + 1; 
+				try{
+					ac.start();
+				} catch (StaleProxyException e){
+					e.printStackTrace();
+				}
+			} catch (StaleProxyException e){
+				e.printStackTrace();
+			}
+		}
+		//System.out.println(currentFuzzyAgents);		
+	}
+
+	private void sendMessage(String msg, String agent){
+		// Send messages to Agents
+		ACLMessage message = new ACLMessage(ACLMessage.INFORM);
+     	message.addReceiver(new AID(agent, AID.ISLOCALNAME));
+    	message.setContent(msg);
+      	this.send(message);	
+	}
+
+	private void readFile(String file){
+		// Reads the XML file
+		try{
+			File f = new File("src\\config\\" + file);
+
+			// Checks whether the given file exists
+			if (!f.isFile()){
+				System.out.println("File not found");
+			return;
+			}
+			
+			DocumentBuilderFactory dbf = DocumentBuilderFactory.newInstance();  
+			DocumentBuilder db = dbf.newDocumentBuilder();  
+			Document doc = db.parse(f);  
+			
+			doc.getDocumentElement().normalize();  
+			NodeList nodeList = doc.getElementsByTagName("SimulationSettings");  
+			
+			for (int i = 0; i < nodeList.getLength(); i++){  
+				Node node = nodeList.item(i);  
+				
+				if (node.getNodeType() == Node.ELEMENT_NODE){  
+					Element eElement = (Element) node;  
+
+					setFuzzy(Integer.parseInt(eElement.getElementsByTagName("fuzzyagents").item(0).getTextContent()));
+					setRules(eElement.getElementsByTagName("fuzzySettings").item(0).getTextContent());
+					setAggregation(eElement.getElementsByTagName("aggregation").item(0).getTextContent());
+				}
+			}
+		} catch (Exception e) {  
+			e.printStackTrace();  
+		}  
+	}	
+
     protected void takeDown(){
         // Method to unregister with the DF 
 		try {
