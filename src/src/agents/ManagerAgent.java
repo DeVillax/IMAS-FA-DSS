@@ -32,9 +32,10 @@ public class ManagerAgent extends Agent {
     private Logger myLogger = Logger.getMyLogger(getClass().getName());
 	private String action = null;
 	private String file = null;
-	private int fuzzy = 0;
+	private int requiredFuzzyAgents = 0;
 	private String rules = null;
 	private String aggregation = null;
+	private int currentFuzzyAgents = 0;
 
 
     private class ReceiveMessageBehaviour extends CyclicBehaviour {
@@ -79,6 +80,7 @@ public class ManagerAgent extends Agent {
 					String ru[] = myAgent.getFuzzySettings().split(",");
 					for (int i = 1; i <= myAgent.getFuzzy(); i++){
 						myAgent.sendMessage(ru[i-1],"fuzzy"+i);
+						//System.out.println("FCL:" + ru[i-1]+"fuzzy"+i);
 					}
 					
 					// Now we need to notify the UserAgent that the Fuzzy Agents are ready.
@@ -154,9 +156,12 @@ public class ManagerAgent extends Agent {
 	private void createFuzzyAgent(){
 		// Dynamically creates the Fuzzy Agent
 		ContainerController cc = getContainerController();
-		for (int i = 0; i < fuzzy; i++){
+		int agentsToCreate = requiredFuzzyAgents - currentFuzzyAgents;
+		int c = currentFuzzyAgents;
+		for (int i = requiredFuzzyAgents; i >c ; i--){
 			try{
-				AgentController ac = cc.createNewAgent("fuzzy" + Integer.toString(i+1), "FuzzyAgent", null);
+				AgentController ac = cc.createNewAgent("fuzzy" + Integer.toString(i), "FuzzyAgent", null);
+				currentFuzzyAgents = currentFuzzyAgents + 1; 
 				try{
 					ac.start();
 				} catch (StaleProxyException e){
@@ -165,7 +170,8 @@ public class ManagerAgent extends Agent {
 			} catch (StaleProxyException e){
 				e.printStackTrace();
 			}
-		}		
+		}
+		System.out.println(currentFuzzyAgents);		
 	}
 
 	private void sendMessage(String msg, String agent){
@@ -185,7 +191,7 @@ public class ManagerAgent extends Agent {
 	}
 
 	public void setFuzzy(int num){
-		this.fuzzy = num;
+		this.requiredFuzzyAgents = num;
 	}
 
 	public void setRules(String fcl){
@@ -197,7 +203,7 @@ public class ManagerAgent extends Agent {
 	}
 
 	public int getFuzzy(){
-		return this.fuzzy;
+		return this.requiredFuzzyAgents;
 	}
 
 	public String getAction(){

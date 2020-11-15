@@ -50,9 +50,11 @@ public class FuzzyAgent extends Agent {
 
 		public void action() {
 			// It gets the message and print its content 
+			/*
 			ACLMessage msg = null;
             msg = myAgent.blockingReceive();
             System.out.println(msg.getContent()); 
+			*/
 		}
 	}
 

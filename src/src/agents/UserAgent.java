@@ -16,13 +16,15 @@ import jade.lang.acl.ACLMessage;
 // Java imports
 import java.util.Scanner;
 
-// Compile: javac -cp lib\jade.jar -d src\test\ src\src\agents\*.java
-// Execute: java -cp lib\jade.jar;src\test jade.Boot -agents user:UserAgent -gui
+// Compile: javac -cp lib\jade.jar -d src\output\ src\src\agents\*.java
+// Execute: java -cp lib\jade.jar;src\output jade.Boot -agents user:UserAgent -gui
 
 
 // All agents extend from the Agent class
 public class UserAgent extends Agent {
     private Logger myLogger = Logger.getMyLogger(getClass().getName());
+	private boolean pendingAction = false;
+	private String userInput = null;
 
     private class ReadUserInputBehaviour extends CyclicBehaviour {
 		/*
@@ -46,12 +48,15 @@ public class UserAgent extends Agent {
 			String input = scanner.nextLine();
 			
 			// Now this info needs to be passed to the ManagerAgent
-			ACLMessage message = new ACLMessage(ACLMessage.INFORM);
-     		message.addReceiver(new AID("manager", AID.ISLOCALNAME));
-      		message.setContent(input);
-      		myAgent.send(message);		
+			myAgent.setPendingAction(true);
+			myAgent.setUserInput(input);
+			
 		}
+	}
 
+	enum State{
+		IDLE,
+		WAITING
 	}
 
 	private class ReceiveMessageBehaviour extends CyclicBehaviour{
@@ -64,17 +69,29 @@ public class UserAgent extends Agent {
 
 		*/
 		private UserAgent myAgent;
+		private State state; 
 		
         public ReceiveMessageBehaviour(UserAgent a) {
 			super(a);
 			myAgent = a;
+			state = State.IDLE;
 		}
 
 		public void action() {
-			// It gets the message and print its content 
-			ACLMessage msg = null;
-            msg = myAgent.blockingReceive();
-            System.out.println(msg.getContent()); 
+			switch(state){
+				case IDLE:
+					if (myAgent.getPendingAction()){
+						String msg = myAgent.getUserInput();
+						state = State.WAITING;
+						myAgent.sendMessage(msg,"manager");
+					}
+				case WAITING:
+					ACLMessage msg = null;
+            		msg = myAgent.blockingReceive();
+					state = State.IDLE;
+					myAgent.setPendingAction(false);
+					System.out.println(msg.getContent());
+			} 
 		}
 	}
 	
@@ -94,13 +111,34 @@ public class UserAgent extends Agent {
 
         try {
 			DFService.register(this, dfd);
-			addBehaviour(new  ReadUserInputBehaviour(this));
+			addBehaviour(new ReadUserInputBehaviour(this));
 			addBehaviour(new ReceiveMessageBehaviour(this));
 		} catch (FIPAException e) {
 			myLogger.log(Logger.SEVERE, "Agent " + getLocalName()+ " - Cannot be registered with DF", e);
 			doDelete();
 		}
     }
+
+	// Setters
+	public void setPendingAction(boolean x){
+		this.pendingAction = x;
+	}
+
+	public void setUserInput(String input){
+		this.userInput = input;
+	}
+
+	// Getters
+
+	public boolean getPendingAction(){
+		return this.pendingAction;
+	}
+
+	public String getUserInput(){
+		return this.userInput;
+	}
+
+	// Other methods
 	
 	private void createManagerAgent(){
 		// Dynamically creates the Manager Agent
@@ -115,6 +153,14 @@ public class UserAgent extends Agent {
 		} catch (StaleProxyException e){
 			e.printStackTrace();
 		}	
+	}
+
+	private void sendMessage(String msg, String agent){
+		// Send messages to other agents
+		ACLMessage message = new ACLMessage(ACLMessage.INFORM);
+     	message.addReceiver(new AID(agent, AID.ISLOCALNAME));
+    	message.setContent(msg);
+      	this.send(message);	
 	}
 	
     protected void takeDown(){
