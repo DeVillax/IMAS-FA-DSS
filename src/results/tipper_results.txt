@@ -1,0 +1,5 @@
+Domain: tipper
+Row 1 : Decision is 5.5787565879995675
+Row 2 : Decision is 5.5787565879995675
+Row 3 : Decision is 5.647024728418468
+Row 4 : Decision is 1.3005187108587657
